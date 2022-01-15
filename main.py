@@ -1,8 +1,10 @@
+import json
 import string
 from tkinter import *
 from tkinter import messagebox
 import random
 import pyperclip
+
 
 # ---------------------------- PASSWORD GENERATOR ------------------------------- #
 
@@ -10,22 +12,29 @@ import pyperclip
 def generate_password():
     """generate random password"""
     pass_list = [random.choice(string.ascii_letters) for _ in range(random.randint(8, 10))] + \
-                [str(random.randint(0, 9)) for _ in range(random.randint(2, 4))] +\
+                [str(random.randint(0, 9)) for _ in range(random.randint(2, 4))] + \
                 [random.choice(['!', '#', '$', '&', '*', '+']) for _ in range(random.randint(2, 4))]
     random.shuffle(pass_list)
     password_string = "".join(pass_list)
     pass_entry.insert(0, password_string)
     pyperclip.copy(password_string)
 
+
 # ---------------------------- SAVE PASSWORD ------------------------------- #
 
 
 def data_save():
-    """Data is saved in a text file
+    """Data is saved in a json file
     delete the data in website entry and password entry"""
-    website = website_entry.get()
+    website = website_entry.get().capitalize()
     email = email_entry.get()
     password = pass_entry.get()
+    new_data = {
+        website: {
+            'email': email,
+            'password': password
+        }
+    }
 
     # add condition if all data is filled
     if len(website) == 0 and len(password) == 0:
@@ -39,15 +48,25 @@ def data_save():
                                                                            f"\nEmail: {email}"
                                                                            f'\nPassword: {password}'
                                                                            f'\nDo you want to save?')
-
         if all_is_filled:
-            # data is save in data.xt
-            with open('data.txt', 'a') as data:
-                data.write(f'{website} | {email} | {password}\n')
-            website_entry.delete(0, END)
-            pass_entry.delete(0, END)
-            # show an info dialog that data is saved
-            messagebox.showinfo(title="Data Save", message="Data is Save")
+            try:
+                with open('data.json', 'r') as data_file:
+                    data = json.load(data_file)
+
+            except FileNotFoundError:
+                with open('data.json', 'w') as data_file:
+                    json.dump(new_data, data_file, indent=4)
+
+            else:
+                data.update(new_data)
+                with open('data.json', 'w') as data_file:
+                    json.dump(data, data_file, indent=4)
+
+            finally:
+                website_entry.delete(0, END)
+                pass_entry.delete(0, END)
+                # show an info dialog that data is saved
+                messagebox.showinfo(title="Data Save", message="Data is Save")
 
 
 # ---------------------------- UI SETUP ------------------------------- #
@@ -76,6 +95,7 @@ email_entry.grid(column=1, row=2, pady=2, padx=2, columnspan=2, sticky=W)
 email_entry.insert(0, "konyak@yahoo.com")
 pass_entry = Entry(highlightthickness=2, width=30)
 pass_entry.grid(column=1, row=3, sticky=W)
+
 
 generate_button = Button(text='Generate Password', highlightthickness=2, command=generate_password)
 generate_button.grid(column=2, row=3, pady=2, padx=2, sticky=E)
