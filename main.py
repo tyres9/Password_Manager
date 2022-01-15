@@ -71,6 +71,29 @@ def data_save():
 
 # ---------------------------- UI SETUP ------------------------------- #
 
+def data_no_found():
+    messagebox.showinfo(title='Error', message='No Data Found')
+
+
+def search_data():
+    website = website_entry.get().capitalize()
+    try:
+        with open('data.json', 'r') as data_file:
+            data = json.load(data_file)
+
+    except FileNotFoundError:
+        data_no_found()
+
+    else:
+        if website in data:
+            email = data[website]['email']
+            password = data[website]['password']
+            messagebox.showinfo(title=website, message=f'Email : {email}'
+                                                       f'\nPassword : {password}')
+        else:
+            data_no_found()
+
+
 window = Tk()
 window.title('Password Manager')
 window.config(padx=50, pady=50, bg='white')
@@ -87,7 +110,8 @@ email_label.grid(column=0, row=2)
 pass_label = Label(text='Password:', bg='white')
 pass_label.grid(column=0, row=3)
 
-website_entry = Entry(highlightthickness=2, width=50)
+
+website_entry = Entry(highlightthickness=2, width=30)
 website_entry.grid(column=1, row=1, pady=2, padx=2, columnspan=2, sticky=W)
 website_entry.focus()
 email_entry = Entry(highlightthickness=2, width=50)
@@ -96,7 +120,8 @@ email_entry.insert(0, "konyak@yahoo.com")
 pass_entry = Entry(highlightthickness=2, width=30)
 pass_entry.grid(column=1, row=3, sticky=W)
 
-
+search_button = Button(text='Search', width=15, command=search_data)
+search_button.grid(column=2, row=1, pady=2, padx=2, sticky=E)
 generate_button = Button(text='Generate Password', highlightthickness=2, command=generate_password)
 generate_button.grid(column=2, row=3, pady=2, padx=2, sticky=E)
 add_button = Button(text='Add', highlightthickness=2, width=42, command=data_save)
